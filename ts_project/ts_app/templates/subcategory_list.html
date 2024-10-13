@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% extends 'base.html' %}
+
+{% block title %}Подкатегории{% endblock %}
+
+{% block content %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'styles.css' %}">
+</head>
+<body>
+
+<h1>Подкатегории</h1>
+
+{% if messages %}
+<div class="messages-container">
+    {% for message in messages %}
+    <div class="message-box {% if message.tags %}{{ message.tags }}{% endif %}">
+        <span>{{ message }}</span>
+        <button class="close-button" onclick="this.parentElement.style.display='none';">&times;</button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+<script>
+     function showForm() {
+        var form = document.getElementById("addSubcategoryForm");
+        if (form.style.display === "none" || form.style.display === "") {
+            form.style.display = "block";
+        } else {
+            form.style.display = "none";
+        }
+    }
+
+</script>
+
+<div id="addSubcategoryForm" class="form-container">
+    <h2>Добавить подкатегорию</h2>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Сохранить</button>
+        <button type="button" class="cancel-button" onclick="showForm()">Отмена</button>
+    </form>
+</div>
+<table>
+    <tr>
+        <th>Название подкатегории</th>
+        <th>
+            <button class="add-button" onclick="showForm()">+</button>
+        </th>
+    </tr>
+    {% for subcategory in subcategories %}
+    <tr>
+        <td>{{ subcategory.name }}</td>
+        <td>
+            <a href="{% url 'delete_subcategory' subcategory.id %}" class="delete-button"
+               onclick="return confirm('Вы уверены, что хотите удалить эту подкатегорию?');">
+                Удалить
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}
+</body>
+</html>

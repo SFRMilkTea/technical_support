@@ -1,5 +1,5 @@
 from django import forms
-from .models import User, Department, Category
+from .models import User, Department, Category, Subcategory
 
 
 class UserForm(forms.ModelForm):
@@ -42,6 +42,18 @@ class CategoryForm(forms.ModelForm):
         fields = ['name']
         labels = {
             'name': 'Название категории'
+        }
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'small-input'})
+        }
+
+
+class SubcategoryForm(forms.ModelForm):
+    class Meta:
+        model = Subcategory
+        fields = ['name']
+        labels = {
+            'name': 'Название подкатегории'
         }
         widgets = {
             'name': forms.TextInput(attrs={'class': 'small-input'})

@@ -1,9 +1,9 @@
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 
-from ts_app.models import User, Department, Request, Category
+from ts_app.models import User, Department, Request, Category, Subcategory
 
-from ts_app.forms import UserForm, DepartmentForm, CategoryForm
+from ts_app.forms import UserForm, DepartmentForm, CategoryForm, SubcategoryForm
 
 
 def user_list(request):
@@ -82,3 +82,27 @@ def delete_category(request, category_id):
         category.delete()
         messages.success(request, f'Категория {category.name} была удалена')
     return redirect('category_list')
+
+# Представление для отображения списка подкатегорий и формы добавления
+def subcategory_list(request):
+    subcategories = Subcategory.objects.all()
+    if request.method == 'POST':
+        form = SubcategoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('subcategory_list')
+    else:
+        form = SubcategoryForm()
+
+    return render(request, 'subcategory_list.html', {'subcategories': subcategories, 'form': form})
+
+
+# Представление для удаления подкатегорий
+def delete_subcategory(request, subcategory_id):
+    subcategory = get_object_or_404(Subcategory, id=subcategory_id)
+    if Request.objects.filter(id_subcategory=subcategory).exists():
+        messages.error(request, 'Невозможно удалить эту подкатегорию')
+    else:
+        subcategory.delete()
+        messages.success(request, f'Подкатегория {subcategory.name} была удалена')
+    return redirect('subcategory_list')
