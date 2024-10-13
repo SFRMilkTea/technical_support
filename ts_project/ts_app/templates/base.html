@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'styles.css' %}">
+</head>
+<body>
+
+<header>
+    <h3>Навигация: </h3>
+    <a href="{% url 'user_list' %}" class="nav-button">Пользователи</a>
+    <a href="{% url 'department_list' %}" class="nav-button">Отделы</a>
+    <a href="{% url 'category_list' %}" class="nav-button">Категории</a>
+</header>
+
+<div class="content">
+    {% block content %}
+    {% endblock %}
+</div>
+
+</body>
+</html>
