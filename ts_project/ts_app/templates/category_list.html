@@ -1,23 +1,22 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
 {% extends 'base.html' %}
 
-{% block title %}Отделы{% endblock %}
+{% block title %}Категории{% endblock %}
 
 {% block content %}
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Отделы</title>
+    <title>Категории</title>
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'styles.css' %}">
 </head>
-
 <body>
 
-<h1>Отделы</h1>
+<h1>Категории</h1>
 
 {% if messages %}
 <div class="messages-container">
@@ -31,20 +30,17 @@
 {% endif %}
 <script>
      function showForm() {
-        var form = document.getElementById("addDepartmentForm");
+        var form = document.getElementById("addCategoryForm");
         if (form.style.display === "none" || form.style.display === "") {
             form.style.display = "block";
         } else {
             form.style.display = "none";
         }
     }
-
-
 </script>
 
-<!-- Форма для добавления отдела (скрыта по умолчанию) -->
-<div id="addDepartmentForm" class="form-container">
-    <h2>Добавить отдел</h2>
+<div id="addCategoryForm" class="form-container">
+    <h2>Добавить категорию</h2>
     <form method="POST">
         {% csrf_token %}
         {{ form.as_p }}
@@ -54,18 +50,17 @@
 </div>
 <table>
     <tr>
-        <th>Название отдела</th>
+        <th>Название категории</th>
         <th>
             <button class="add-button" onclick="showForm()">+</button>
         </th>
     </tr>
-    {% for department in departments %}
+    {% for category in categories %}
     <tr>
-        <td>{{ department.name }}</td>
+        <td>{{ category.name }}</td>
         <td>
-            <!-- Кнопка для удаления отдела -->
-            <a href="{% url 'delete_department' department.id %}" class="delete-button"
-               onclick="return confirm('Вы уверены, что хотите удалить этот отдел?');">
+            <a href="{% url 'delete_category' category.id %}" class="delete-button"
+               onclick="return confirm('Вы уверены, что хотите удалить эту категорию?');">
                 Удалить
             </a>
         </td>

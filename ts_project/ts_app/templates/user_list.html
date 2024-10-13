@@ -1,5 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
+{% extends 'base.html' %}
+
+{% block title %}Сотрудники{% endblock %}
+
+{% block content %}
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,12 +14,6 @@
     <link rel="stylesheet" type="text/css" href="{% static 'styles.css' %}">
 </head>
 <body>
-<!-- Хэдер с навигационными кнопками -->
-<header>
-    <h3>Навигация: </h3>
-    <a href="{% url 'user_list' %}" class="nav-button">Пользователи</a>
-    <a href="{% url 'department_list' %}" class="nav-button">Отделы</a>
-</header>
 
 <h1>Пользователи</h1>
 {% if messages %}
@@ -73,5 +73,6 @@
     </tr>
     {% endfor %}
 </table>
+{% endblock %}
 </body>
 </html>

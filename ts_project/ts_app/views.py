@@ -1,9 +1,9 @@
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 
-from ts_app.models import User, Department, Request
+from ts_app.models import User, Department, Request, Category
 
-from ts_app.forms import UserForm, DepartmentForm
+from ts_app.forms import UserForm, DepartmentForm, CategoryForm
 
 
 def user_list(request):
@@ -56,3 +56,29 @@ def delete_department(request, department_id):
         department.delete()
         messages.success(request, f'Отдел {department.name} был удален')
         return redirect('department_list')
+
+
+# Представление для отображения списка категорий и формы добавления
+def category_list(request):
+    categories = Category.objects.all()
+
+    if request.method == 'POST':
+        form = CategoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('category_list')
+    else:
+        form = CategoryForm()
+
+    return render(request, 'category_list.html', {'categories': categories, 'form': form})
+
+
+# Представление для удаления категорий
+def delete_category(request, category_id):
+    category = get_object_or_404(Category, id=category_id)
+    if Request.objects.filter(id_category=category).exists():
+        messages.error(request, 'Невозможно удалить эту категорию')
+    else:
+        category.delete()
+        messages.success(request, f'Категория {category.name} была удалена')
+    return redirect('category_list')
