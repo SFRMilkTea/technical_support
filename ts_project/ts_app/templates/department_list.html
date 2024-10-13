@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Пользователи</title>
+    <title>Отделы</title>
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'styles.css' %}">
 </head>
 <body>
+
 <!-- Хэдер с навигационными кнопками -->
 <header>
     <h3>Навигация: </h3>
@@ -15,7 +16,9 @@
     <a href="{% url 'department_list' %}" class="nav-button">Отделы</a>
 </header>
 
-<h1>Пользователи</h1>
+
+<h1>Отделы</h1>
+
 {% if messages %}
 <div class="messages-container">
     {% for message in messages %}
@@ -28,7 +31,7 @@
 {% endif %}
 <script>
      function showForm() {
-        var form = document.getElementById("addUserForm");
+        var form = document.getElementById("addDepartmentForm");
         if (form.style.display === "none" || form.style.display === "") {
             form.style.display = "block";
         } else {
@@ -39,9 +42,9 @@
 
 </script>
 
-<!-- Форма для добавления пользователя (скрыта по умолчанию) -->
-<div id="addUserForm" class="form-container">
-    <h2>Добавить пользователя</h2>
+<!-- Форма для добавления отдела (скрыта по умолчанию) -->
+<div id="addDepartmentForm" class="form-container">
+    <h2>Добавить отдел</h2>
     <form method="POST">
         {% csrf_token %}
         {{ form.as_p }}
@@ -51,22 +54,18 @@
 </div>
 <table>
     <tr>
-        <th>ФИО</th>
-        <th>Email</th>
-        <th>Отдел</th>
+        <th>Название отдела</th>
         <th>
             <button class="add-button" onclick="showForm()">+</button>
         </th>
     </tr>
-    {% for user in users %}
+    {% for department in departments %}
     <tr>
-        <td>{{ user.surename }} {{ user.name }} {{ user.patronymic|default_if_none:'' }}</td>
-        <td>{{ user.email }}</td>
-        <td>{{ user.id_department.name }}</td>
+        <td>{{ department.name }}</td>
         <td>
-            <!-- Кнопка для удаления пользователя -->
-            <a href="{% url 'delete_user' user.id %}" class="delete-button"
-               onclick="return confirm('Вы уверены, что хотите удалить этого пользователя?');">
+            <!-- Кнопка для удаления отдела -->
+            <a href="{% url 'delete_department' department.id %}" class="delete-button"
+               onclick="return confirm('Вы уверены, что хотите удалить этот отдел?');">
                 Удалить
             </a>
         </td>

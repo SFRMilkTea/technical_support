@@ -1,5 +1,5 @@
 from django import forms
-from .models import User
+from .models import User, Department
 
 
 class UserForm(forms.ModelForm):
@@ -21,4 +21,17 @@ class UserForm(forms.ModelForm):
             'patronymic': forms.TextInput(attrs={'class': 'small-input'}),
             'email': forms.EmailInput(attrs={'class': 'small-input'}),
             'department': forms.Select(attrs={'class': 'small-input'})
+        }
+
+
+class DepartmentForm(forms.ModelForm):
+    class Meta:
+        model = Department
+        fields = ['name']
+        labels = {
+            'name': 'Название отдела'
+        }
+
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'small-input'})
         }
