@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пользователи</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'styles.css' %}">
+</head>
+<body>
+<h1>Пользователи</h1>
+<script>
+    function showForm() {
+        if (document.getElementById("addUserForm").style.display == "none") {
+            document.getElementById("addUserForm").style.display = "block";
+        }
+        else
+        {
+            document.getElementById("addUserForm").style.display = "none";
+        }
+    }
+</script>
+
+<!-- Форма для добавления пользователя (скрыта по умолчанию) -->
+<div id="addUserForm"  class="form-container">
+    <h2>Добавить пользователя</h2>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Сохранить</button>
+        <button type="button" class="cancel-button" onclick="showForm()">Отмена</button>
+    </form>
+</div>
+    <table>
+        <tr>
+            <th>ФИО</th>
+            <th>Email</th>
+            <th>Отдел</th>
+            <th><button class="add-button" onclick="showForm()">+</button></th>
+        </tr>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.surename }} {{ user.name }} {{ user.patronymic|default_if_none:'' }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.id_department.name }}</td>
+            <td>
+                <!-- Кнопка для удаления пользователя -->
+                <a href="{% url 'delete_user' user.id %}" class="delete-button"
+                   onclick="return confirm('Вы уверены, что хотите удалить этого пользователя?');">
+                    Удалить
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
