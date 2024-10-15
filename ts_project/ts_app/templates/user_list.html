@@ -1,19 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-
 {% extends 'base.html' %}
 
 {% block title %}Сотрудники{% endblock %}
 
 {% block content %}
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Пользователи</title>
-    {% load static %}
-    <link rel="stylesheet" type="text/css" href="{% static 'styles.css' %}">
-</head>
-<body>
 
 <h1>Пользователи</h1>
 {% if messages %}
@@ -74,5 +63,3 @@
     {% endfor %}
 </table>
 {% endblock %}
-</body>
-</html>

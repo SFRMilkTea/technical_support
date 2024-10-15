@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Заявки{% endblock %}
+
+{% block content %}
+
+
+<h1>Заявки</h1>
+{% if messages %}
+<div class="messages-container">
+    {% for message in messages %}
+    <div class="message-box {% if message.tags %}{{ message.tags }}{% endif %}">
+        <span>{{ message }}</span>
+        <button class="close-button" onclick="this.parentElement.style.display='none';">&times;</button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<table>
+    <tr>
+        <th>ФИО пользователя</th>
+        <th>Текст</th>
+        <th>Категория</th>
+        <th>Подкатегория</th>
+        <th>ФИО исполнителя</th>
+        <th>Статус</th>
+    </tr>
+    {% for request in requests %}
+    <tr>
+        <td>{{ request.id_user.surename }} {{ request.id_user.name }} {{ request.id_user.patronymic|default_if_none:''}}
+        </td>
+        <td>{{ request.text }}</td>
+        <td>{{ request.id_category.name }}</td>
+        <td>{{ request.id_subcategory.name }}</td>
+        <td>{{ request.id_executor.surename }} {{ request.id_executor.name }} {{request.id_executor.patronymic|default_if_none:'' }}
+        </td>
+        <td>{{ request.id_status.name }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}
