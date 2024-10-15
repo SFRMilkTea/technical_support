@@ -215,3 +215,25 @@ th {
     background-color: darkgreen;
 }
 
+.status {
+    padding: 5px 10px;
+    border-radius: 5px;
+    color: black;
+    font-weight: bold;
+}
+
+.status-2 {
+    color:  #0000bb;
+}
+
+.status-3 {
+    color: #ffc107;
+}
+
+.status-4 {
+    color: #28a745;
+}
+
+.status-5 {
+    color: #ff0000;
+}

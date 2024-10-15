@@ -35,7 +35,11 @@
         <td>{{ request.id_subcategory.name }}</td>
         <td>{{ request.id_executor.surename }} {{ request.id_executor.name }} {{request.id_executor.patronymic|default_if_none:'' }}
         </td>
-        <td>{{ request.id_status.name }}</td>
+        <td>
+    <span class="status status-{{ request.id_status.id }}">
+        {{ request.id_status.name }}
+    </span>
+        </td>
     </tr>
     {% endfor %}
 </table>
