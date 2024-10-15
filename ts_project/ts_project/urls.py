@@ -13,4 +13,7 @@ urlpatterns = [
     path('categories/delete/<int:category_id>/', views.delete_category, name='delete_category'),
     path('subcategories/', views.subcategory_list, name='subcategory_list'),
     path('subcategories/delete/<int:subcategory_id>/', views.delete_subcategory, name='delete_subcategory'),
+    path('requests/', views.request_list, name='request_list'),
+    path('requests/create', views.request_create, name='request_creator'),
+    # path('requests/delete/<int:request_id>/', views.delete_request, name='delete_request'),
 ]

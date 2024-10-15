@@ -1,5 +1,5 @@
 from django import forms
-from .models import User, Department, Category, Subcategory
+from .models import User, Department, Category, Subcategory, Request
 
 
 class UserForm(forms.ModelForm):
@@ -57,4 +57,25 @@ class SubcategoryForm(forms.ModelForm):
         }
         widgets = {
             'name': forms.TextInput(attrs={'class': 'small-input'})
+        }
+
+
+class RequestForm(forms.ModelForm):
+    class Meta:
+        model = Request
+
+        fields = ['id_user', 'text', 'id_category', 'id_subcategory']
+
+        labels = {
+            'id_user': 'ФИО пользователя',
+            'text': 'Текст',
+            'id_category': 'Категория',
+            'id_subcategory': 'Подкатегория',
+        }
+
+        widgets = {
+            'user': forms.Select(attrs={'class': 'small-input'}),
+            'text': forms.Textarea(),
+            'category': forms.Select(attrs={'class': 'small-input'}),
+            'subcategory': forms.Select(attrs={'class': 'small-input'}),
         }

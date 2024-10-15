@@ -78,6 +78,9 @@ class Category(models.Model):
         managed = False
         db_table = 'category'
 
+    def __str__(self):
+        return self.name
+
 
 class Department(models.Model):
     id = models.BigAutoField(primary_key=True)
@@ -138,14 +141,13 @@ class DjangoSession(models.Model):
 
 class Request(models.Model):
     id = models.BigAutoField(primary_key=True)
-    number = models.BigIntegerField()
     id_user = models.ForeignKey('User', models.DO_NOTHING, db_column='id_user')
     text = models.TextField()
     id_subcategory = models.ForeignKey('Subcategory', models.DO_NOTHING, db_column='id_subcategory')
     id_category = models.ForeignKey(Category, models.DO_NOTHING, db_column='id_category')
     id_executor = models.ForeignKey('User', models.DO_NOTHING, db_column='id_executor',
                                     related_name='request_id_executor_set', blank=True, null=True)
-    id_status = models.ForeignKey('Status', models.DO_NOTHING, db_column='id_status')
+    id_status = models.ForeignKey('Status', models.DO_NOTHING, db_column='id_status', default=2)
 
     class Meta:
         managed = False
@@ -160,6 +162,9 @@ class Status(models.Model):
         managed = False
         db_table = 'status'
 
+    def __str__(self):
+        return self.name
+
 
 class Subcategory(models.Model):
     id = models.BigAutoField(primary_key=True)
@@ -168,6 +173,9 @@ class Subcategory(models.Model):
     class Meta:
         managed = False
         db_table = 'subcategory'
+
+    def __str__(self):
+        return self.name
 
 
 class User(models.Model):
@@ -181,3 +189,11 @@ class User(models.Model):
     class Meta:
         managed = False
         db_table = 'user'
+
+    def __str__(self):
+        if self.patronymic:
+            patronymic = self.patronymic
+        else:
+            patronymic = ""
+        fio = self.surename + " " + self.name + " " + patronymic
+        return fio

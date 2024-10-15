@@ -37,13 +37,6 @@ th {
     text-align: center;
 }
 
-#addUserForm {
-    display: none;
-    margin-top: 20px;
-    padding: 20px;
-    border: 1px solid #ccc;
-    background-color: #f9f9f9;
-}
  /* Настройка ширины текстовых полей */
 .small-input {
     width: 200px;
@@ -167,3 +160,58 @@ th {
 .close-button:hover {
     color: #000;
 }
+
+/* Стили для формы добавления заявки*/
+
+.form-request-add {
+    position: absolute;
+    width: 300px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-left: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Выравнивание полей формы */
+.form-request-add label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-request-add textarea {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.form-request-add select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+/* Стили для кнопок формы */
+.form-request-add button {
+    width: 100%;
+    padding: 10px;
+    background-color: green;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.form-request-add button:hover {
+    background-color: darkgreen;
+}
+

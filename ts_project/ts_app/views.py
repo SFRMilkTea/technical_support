@@ -1,9 +1,9 @@
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 
-from ts_app.models import User, Department, Request, Category, Subcategory
+from ts_app.models import User, Department, Request, Category, Subcategory, Request
 
-from ts_app.forms import UserForm, DepartmentForm, CategoryForm, SubcategoryForm
+from ts_app.forms import UserForm, DepartmentForm, CategoryForm, SubcategoryForm, RequestForm
 
 
 def user_list(request):
@@ -83,6 +83,7 @@ def delete_category(request, category_id):
         messages.success(request, f'Категория {category.name} была удалена')
     return redirect('category_list')
 
+
 # Представление для отображения списка подкатегорий и формы добавления
 def subcategory_list(request):
     subcategories = Subcategory.objects.all()
@@ -106,3 +107,30 @@ def delete_subcategory(request, subcategory_id):
         subcategory.delete()
         messages.success(request, f'Подкатегория {subcategory.name} была удалена')
     return redirect('subcategory_list')
+
+
+# Представление для отображения списка заявок и формы добавления
+def request_list(request):
+    requests = Request.objects.all()
+    # if request.method == 'POST':
+    #     form = RequestForm(request.POST)
+    #     if form.is_valid():
+    #         form.save()
+    #         return redirect('request_list')
+    # else:
+    #     form = RequestForm()
+
+    return render(request, 'request_list.html', {'requests': requests})
+
+
+# Представление для подачи заявки
+def request_create(request):
+    if request.method == 'POST':
+        form = RequestForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Ваша заявка успешно отправлена!')
+            return redirect('request_creator')
+    else:
+        form = RequestForm()
+    return render(request, 'request_creator.html', {'form': form})
