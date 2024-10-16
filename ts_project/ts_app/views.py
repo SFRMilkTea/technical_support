@@ -1,9 +1,18 @@
 from django.contrib import messages
+from django.db.models import Count
 from django.shortcuts import render, redirect, get_object_or_404
 
 from ts_app.models import User, Department, Request, Category, Subcategory, Request
 
 from ts_app.forms import UserForm, DepartmentForm, CategoryForm, SubcategoryForm, RequestForm
+
+from django.shortcuts import render
+from .models import Request
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from io import BytesIO
+import base64
 
 
 def user_list(request):
@@ -134,3 +143,34 @@ def request_create(request):
     else:
         form = RequestForm()
     return render(request, 'request_creator.html', {'form': form})
+
+def plot_histograms(request):
+    # Группировка заявок по подкатегориям и подсчёт их количества
+    category_counts = Request.objects.values('id_subcategory__name').annotate(total_requests=Count('id'))
+
+    # Преобразуем данные в DataFrame для анализа
+    data = {
+        'category': [item['id_subcategory__name'] for item in category_counts],
+        'total_requests': [item['total_requests'] for item in category_counts]
+    }
+    df = pd.DataFrame(data)
+
+    # Построение гистограммы для всех категорий
+    plt.figure(figsize=(10, 6))
+    sns.barplot(x='category', y='total_requests', data=df, palette='Reds_d')
+
+    # Настройки графика
+    plt.title('Количество заявок по подкатегориям')
+    plt.xlabel('Подкатегория')
+    plt.ylabel('Количество заявок')
+    plt.xticks(rotation=90)  # Поворот текста категорий для удобства чтения
+    plt.tight_layout()
+    # Сохранение гистограммы в буфер
+    buf = BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    image_base64 = base64.b64encode(buf.read()).decode('utf-8')
+    buf.close()
+
+    # Передаем изображение гистограммы в шаблон
+    return render(request, 'histogram.html', {'hist_image': image_base64})
