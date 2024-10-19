@@ -1,5 +1,5 @@
 from django.db import models
-
+from datetime import datetime
 
 class AuthGroup(models.Model):
     name = models.CharField(unique=True, max_length=150)
@@ -148,6 +148,7 @@ class Request(models.Model):
     id_executor = models.ForeignKey('User', models.DO_NOTHING, db_column='id_executor',
                                     related_name='request_id_executor_set', blank=True, null=True)
     id_status = models.ForeignKey('Status', models.DO_NOTHING, db_column='id_status', default=2)
+    creating_date = models.DateField(default=datetime.now())
 
     class Meta:
         managed = False
