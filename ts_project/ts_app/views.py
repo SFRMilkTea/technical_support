@@ -5,7 +5,11 @@ from django.contrib import messages
 from django.db.models import Count
 from django.db.models.functions import TruncMonth
 from django.shortcuts import render, redirect, get_object_or_404
+from nltk.corpus import stopwords
 from scipy import stats
+from sklearn.cluster import KMeans
+from sklearn.manifold import TSNE
+from sklearn.metrics import silhouette_score
 
 from ts_app.models import User, Department, Request, Category, Subcategory, Request
 
@@ -18,6 +22,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from io import BytesIO
 import base64
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 
 def user_list(request):
@@ -353,3 +358,61 @@ def plot_histograms(request):
                   {'hist_image': image_base64, 'qq_image': qq_image, 'matrix_image': matrix_image,
                    'polynom_1': polynom_1, 'polynom_2': polynom_2, 'polynom_3': polynom_3, 'polynom_4': polynom_4,
                    'polynom_5': polynom_5})
+
+
+def clustering(request):
+    requests = Request.objects.values_list('text', flat=True)
+
+    # Преобразование текста в числовые признаки с помощью TF-IDF
+    vectorizer = TfidfVectorizer(stop_words=stopwords.words('russian'))
+    X = vectorizer.fit_transform(requests)
+
+    # метод силуетов для определения оптимального количества кластеров
+    silhouette_scores = []
+    K = range(2, 11)  # Минимум 2 кластера
+    for k in K:
+        kmeans = KMeans(n_clusters=k, random_state=42)
+        kmeans.fit(X)
+        score = silhouette_score(X, kmeans.labels_)
+        silhouette_scores.append(score)
+
+    # Построение графика
+    plt.figure(figsize=(8, 6))
+    plt.plot(K, silhouette_scores, 'bx-')
+    plt.xlabel('Количество кластеров')
+    plt.ylabel('Сила силуэта')
+    plt.title('Определение оптимального количества кластеров по силуэту')
+    plt.tight_layout()
+
+    buf = BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    siluet = base64.b64encode(buf.read()).decode('utf-8')
+    buf.close()
+
+    # Применение кластеризации (KMeans)
+    kmeans = KMeans(n_clusters=7, random_state=0)
+    kmeans.fit(X)
+    labels = kmeans.labels_
+
+    # Понижение размерности с t-SNE для визуализации
+    tsne = TSNE(n_components=2, random_state=0)
+    X_tsne = tsne.fit_transform(X.toarray())
+
+    # Визуализация кластеров
+    plt.figure(figsize=(10, 6))
+    plt.scatter(X_tsne[:, 0], X_tsne[:, 1], c=labels, cmap='rainbow', s=100, alpha=0.7)
+    plt.title('Визуализация кластеров заявок')
+    plt.xlabel('t-SNE 1')
+    plt.ylabel('t-SNE 2')
+    plt.colorbar(label='Кластер')
+    plt.grid(True)
+    plt.tight_layout()
+
+    buf = BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    clusters = base64.b64encode(buf.read()).decode('utf-8')
+    buf.close()
+
+    return render(request, 'clustering.html', {'cleaned_requests': clusters, 'siluet': siluet})
