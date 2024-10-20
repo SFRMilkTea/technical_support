@@ -1,6 +1,10 @@
+import locale
+
 from django.contrib import messages
 from django.db.models import Count
+from django.db.models.functions import TruncMonth
 from django.shortcuts import render, redirect, get_object_or_404
+from scipy import stats
 
 from ts_app.models import User, Department, Request, Category, Subcategory, Request
 
@@ -121,14 +125,6 @@ def delete_subcategory(request, subcategory_id):
 # Представление для отображения списка заявок и формы добавления
 def request_list(request):
     requests = Request.objects.all()
-    # if request.method == 'POST':
-    #     form = RequestForm(request.POST)
-    #     if form.is_valid():
-    #         form.save()
-    #         return redirect('request_list')
-    # else:
-    #     form = RequestForm()
-
     return render(request, 'request_list.html', {'requests': requests})
 
 
@@ -144,33 +140,84 @@ def request_create(request):
         form = RequestForm()
     return render(request, 'request_creator.html', {'form': form})
 
-def plot_histograms(request):
-    # Группировка заявок по подкатегориям и подсчёт их количества
-    category_counts = Request.objects.values('id_subcategory__name').annotate(total_requests=Count('id'))
 
-    # Преобразуем данные в DataFrame для анализа
+def plot_histograms(request):
+    requests = Request.objects.all()
+    locale.setlocale(locale.LC_TIME, 'Russian_Russia.1251')
+    date_counts = Request.objects.annotate(month=TruncMonth('creating_date')).values('month').annotate(
+        total_requests=Count('id')).order_by('month')
+
     data = {
-        'category': [item['id_subcategory__name'] for item in category_counts],
-        'total_requests': [item['total_requests'] for item in category_counts]
+        'month': [item['month'] for item in date_counts],
+        'total_requests': [item['total_requests'] for item in date_counts]
     }
     df = pd.DataFrame(data)
 
-    # Построение гистограммы для всех категорий
+    # Построение графика распределения
+    df['month'] = pd.to_datetime(df['month']).dt.strftime('%B')
     plt.figure(figsize=(10, 6))
-    sns.barplot(x='category', y='total_requests', data=df, palette='Reds_d')
-
-    # Настройки графика
-    plt.title('Количество заявок по подкатегориям')
-    plt.xlabel('Подкатегория')
+    sns.barplot(x='month', y='total_requests', data=df, palette='Reds_d')
+    plt.title('Количество заявок по месяцам')
+    plt.xlabel('Месяц')
     plt.ylabel('Количество заявок')
-    plt.xticks(rotation=90)  # Поворот текста категорий для удобства чтения
+    plt.xticks(rotation=90)
     plt.tight_layout()
-    # Сохранение гистограммы в буфер
     buf = BytesIO()
     plt.savefig(buf, format='png')
     buf.seek(0)
     image_base64 = base64.b64encode(buf.read()).decode('utf-8')
     buf.close()
 
-    # Передаем изображение гистограммы в шаблон
-    return render(request, 'histogram.html', {'hist_image': image_base64})
+    # Построение Q-Q графика
+    values = df['total_requests']
+    plt.figure(figsize=(8, 6))
+    stats.probplot(values, dist="norm", plot=plt)
+    plt.title('Q-Q график для количества заявок по месяцам')
+    plt.grid(True)
+    buf = BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    qq_image = base64.b64encode(buf.read()).decode('utf-8')
+    buf.close()
+
+    # Построение таблицы кросс-табуляции
+    requests_with_executor = Request.objects.exclude(id_executor__isnull=True).filter(id_status=4)
+
+    data_corr = {
+        'executor_id': [req.id_executor.id for req in requests_with_executor],
+        'executor_name': [req.id_executor.surename for req in requests_with_executor],
+        'subcategory_id': [req.id_subcategory.id for req in requests_with_executor],
+        'subcategory_name': [req.id_subcategory.name for req in requests_with_executor]
+    }
+
+    df = pd.DataFrame(data_corr)
+    cross_tab = pd.crosstab(df['executor_id'], df['subcategory_id'])
+    executor_map = df[['executor_id', 'executor_name']].drop_duplicates().set_index('executor_id')[
+        'executor_name'].to_dict()
+    subcategory_map = df[['subcategory_id', 'subcategory_name']].drop_duplicates().set_index('subcategory_id')[
+        'subcategory_name'].to_dict()
+
+    cross_tab.index = cross_tab.index.map(executor_map)
+    cross_tab.columns = cross_tab.columns.map(subcategory_map)
+
+    vmin_value = cross_tab.values.min()
+    vmax_value = cross_tab.values.max()
+
+    plt.figure(figsize=(12, 8))
+    sns.heatmap(cross_tab, annot=True, cmap='Reds', linewidths=0.5, vmin=vmin_value, vmax=vmax_value)
+
+    plt.title('Матрица исполнителей по ПО')
+    plt.xlabel('ПО')
+    plt.ylabel('Исполнитель')
+    plt.xticks(rotation=90)
+    plt.yticks(rotation=0)
+    plt.tight_layout()
+
+    buf = BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    matrix_image = base64.b64encode(buf.read()).decode('utf-8')
+    buf.close()
+
+    return render(request, 'histogram.html',
+                  {'hist_image': image_base64, 'qq_image': qq_image, 'matrix_image': matrix_image})

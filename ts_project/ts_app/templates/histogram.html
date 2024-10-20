@@ -1,8 +1,14 @@
 {% extends 'base.html' %}
 
-{% block title %}Заявки{% endblock %}
+{% block title %}Графики{% endblock %}
 
 {% block content %}
-<h1>Гистограмма распределения количества заявок по программному обеспечению</h1>
+<h1>Гистограмма распределения количества заявок по месяцам</h1>
 <img src="data:image/png;base64,{{ hist_image }}" alt="Гистограмма">
+
+<h1>QQ график количества заявок по месяцам</h1>
+<img src="data:image/png;base64,{{ qq_image }}" alt="QQ">
+
+<h1>Матрица корреляции</h1>
+<img src="data:image/png;base64,{{ matrix_image }}" alt="QQ">
 {% endblock %}
