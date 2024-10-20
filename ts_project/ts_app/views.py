@@ -1,5 +1,6 @@
 import locale
 
+import numpy as np
 from django.contrib import messages
 from django.db.models import Count
 from django.db.models.functions import TruncMonth
@@ -153,8 +154,10 @@ def plot_histograms(request):
     }
     df = pd.DataFrame(data)
 
+    # Преобразуем месяц в формат даты
+    df['month'] = pd.to_datetime(df['month'])
+
     # Построение графика распределения
-    df['month'] = pd.to_datetime(df['month']).dt.strftime('%B')
     plt.figure(figsize=(10, 6))
     sns.barplot(x='month', y='total_requests', data=df, palette='Reds_d')
     plt.title('Количество заявок по месяцам')
@@ -190,11 +193,11 @@ def plot_histograms(request):
         'subcategory_name': [req.id_subcategory.name for req in requests_with_executor]
     }
 
-    df = pd.DataFrame(data_corr)
-    cross_tab = pd.crosstab(df['executor_id'], df['subcategory_id'])
-    executor_map = df[['executor_id', 'executor_name']].drop_duplicates().set_index('executor_id')[
+    df_corr = pd.DataFrame(data_corr)
+    cross_tab = pd.crosstab(df_corr['executor_id'], df_corr['subcategory_id'])
+    executor_map = df_corr[['executor_id', 'executor_name']].drop_duplicates().set_index('executor_id')[
         'executor_name'].to_dict()
-    subcategory_map = df[['subcategory_id', 'subcategory_name']].drop_duplicates().set_index('subcategory_id')[
+    subcategory_map = df_corr[['subcategory_id', 'subcategory_name']].drop_duplicates().set_index('subcategory_id')[
         'subcategory_name'].to_dict()
 
     cross_tab.index = cross_tab.index.map(executor_map)
@@ -219,5 +222,134 @@ def plot_histograms(request):
     matrix_image = base64.b64encode(buf.read()).decode('utf-8')
     buf.close()
 
+    # Аппроксимация
+    base_date = pd.to_datetime('2024-01-01')
+    data_for_polynom = Request.objects.values('creating_date').annotate(total_requests=Count('id')).order_by(
+        'creating_date')
+    data = {
+        'creating_date': [item['creating_date'] for item in data_for_polynom],
+        'total_requests': [item['total_requests'] for item in data_for_polynom]
+    }
+    df = pd.DataFrame(data)
+    df['creating_date'] = pd.to_datetime(df['creating_date'])
+    df['days'] = (df['creating_date'] - base_date).dt.days
+
+    # Полином первого порядка
+    plt.figure(figsize=(10, 6))
+    coefficients = np.polyfit(df['days'], df['total_requests'], 1)  # Получение коэффициентов полинома
+    polynomial = np.poly1d(coefficients)  # Создание полинома
+    X_poly = np.linspace(min(df['days']), max(df['days']))  # Точки для построения полинома
+    Y_poly = polynomial(X_poly)  # Вычисление значений полинома
+
+    plt.plot(X_poly, Y_poly, label='Полином первого порядка')
+
+    plt.scatter(df['days'], df['total_requests'], color='red', label='Данные о заявках')
+    plt.title('Аппроксимация данных полиномом первого порядка')
+    plt.xlabel('Количество дней с 01.01.2024')
+    plt.ylabel('Количество заявок')
+    plt.legend()
+    plt.grid()
+    plt.tight_layout()
+
+    buf = BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    polynom_1 = base64.b64encode(buf.read()).decode('utf-8')
+    buf.close()
+
+    # Полином второго порядка
+    plt.figure(figsize=(10, 6))
+    coefficients = np.polyfit(df['days'], df['total_requests'], 2)  # Получение коэффициентов полинома
+    polynomial = np.poly1d(coefficients)  # Создание полинома
+    X_poly = np.linspace(min(df['days']), max(df['days']))  # Точки для построения полинома
+    Y_poly = polynomial(X_poly)  # Вычисление значений полинома
+
+    plt.plot(X_poly, Y_poly, label='Полином второго порядка')
+
+    plt.scatter(df['days'], df['total_requests'], color='red', label='Данные о заявках')
+    plt.title('Аппроксимация данных полиномом второго порядка')
+    plt.xlabel('Количество дней с 01.01.2024')
+    plt.ylabel('Количество заявок')
+    plt.legend()
+    plt.grid()
+    plt.tight_layout()
+
+    buf = BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    polynom_2 = base64.b64encode(buf.read()).decode('utf-8')
+    buf.close()
+
+    # Полином третьего порядка
+    plt.figure(figsize=(10, 6))
+    coefficients = np.polyfit(df['days'], df['total_requests'], 3)  # Получение коэффициентов полинома
+    polynomial = np.poly1d(coefficients)  # Создание полинома
+    X_poly = np.linspace(min(df['days']), max(df['days']))  # Точки для построения полинома
+    Y_poly = polynomial(X_poly)  # Вычисление значений полинома
+
+    plt.plot(X_poly, Y_poly, label='Полином третьего порядка')
+
+    plt.scatter(df['days'], df['total_requests'], color='red', label='Данные о заявках')
+    plt.title('Аппроксимация данных полиномом третьего порядка')
+    plt.xlabel('Количество дней с 01.01.2024')
+    plt.ylabel('Количество заявок')
+    plt.legend()
+    plt.grid()
+    plt.tight_layout()
+
+    buf = BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    polynom_3 = base64.b64encode(buf.read()).decode('utf-8')
+    buf.close()
+
+    # Полином четвертого порядка
+    plt.figure(figsize=(10, 6))
+    coefficients = np.polyfit(df['days'], df['total_requests'], 4)  # Получение коэффициентов полинома
+    polynomial = np.poly1d(coefficients)  # Создание полинома
+    X_poly = np.linspace(min(df['days']), max(df['days']))  # Точки для построения полинома
+    Y_poly = polynomial(X_poly)  # Вычисление значений полинома
+
+    plt.plot(X_poly, Y_poly, label='Полином четвертого порядка')
+
+    plt.scatter(df['days'], df['total_requests'], color='red', label='Данные о заявках')
+    plt.title('Аппроксимация данных полиномом четвертого порядка')
+    plt.xlabel('Количество дней с 01.01.2024')
+    plt.ylabel('Количество заявок')
+    plt.legend()
+    plt.grid()
+    plt.tight_layout()
+
+    buf = BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    polynom_4 = base64.b64encode(buf.read()).decode('utf-8')
+    buf.close()
+
+    # Полином пятого порядка
+    plt.figure(figsize=(10, 6))
+    coefficients = np.polyfit(df['days'], df['total_requests'], 5)  # Получение коэффициентов полинома
+    polynomial = np.poly1d(coefficients)  # Создание полинома
+    X_poly = np.linspace(min(df['days']), max(df['days']))  # Точки для построения полинома
+    Y_poly = polynomial(X_poly)  # Вычисление значений полинома
+
+    plt.plot(X_poly, Y_poly, label='Полином пятого порядка')
+
+    plt.scatter(df['days'], df['total_requests'], color='red', label='Данные о заявках')
+    plt.title('Аппроксимация данных полиномом пятого порядка')
+    plt.xlabel('Количество дней с 01.01.2024')
+    plt.ylabel('Количество заявок')
+    plt.legend()
+    plt.grid()
+    plt.tight_layout()
+
+    buf = BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    polynom_5 = base64.b64encode(buf.read()).decode('utf-8')
+    buf.close()
+
     return render(request, 'histogram.html',
-                  {'hist_image': image_base64, 'qq_image': qq_image, 'matrix_image': matrix_image})
+                  {'hist_image': image_base64, 'qq_image': qq_image, 'matrix_image': matrix_image,
+                   'polynom_1': polynom_1, 'polynom_2': polynom_2, 'polynom_3': polynom_3, 'polynom_4': polynom_4,
+                   'polynom_5': polynom_5})
