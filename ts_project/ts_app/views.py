@@ -7,7 +7,7 @@ from django.db.models.functions import TruncMonth
 from django.shortcuts import render, redirect, get_object_or_404
 from nltk.corpus import stopwords
 from scipy import stats
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, DBSCAN
 from sklearn.manifold import TSNE
 from sklearn.metrics import silhouette_score
 
@@ -369,7 +369,7 @@ def clustering(request):
 
     # метод силуетов для определения оптимального количества кластеров
     silhouette_scores = []
-    K = range(2, 11)  # Минимум 2 кластера
+    K = range(3, 6)  # Минимум 2 кластера
     for k in K:
         kmeans = KMeans(n_clusters=k, random_state=42)
         kmeans.fit(X)
@@ -391,7 +391,7 @@ def clustering(request):
     buf.close()
 
     # Применение кластеризации (KMeans)
-    kmeans = KMeans(n_clusters=7, random_state=0)
+    kmeans = KMeans(n_clusters=4, random_state=0)
     kmeans.fit(X)
     labels = kmeans.labels_
 
@@ -415,4 +415,35 @@ def clustering(request):
     clusters = base64.b64encode(buf.read()).decode('utf-8')
     buf.close()
 
-    return render(request, 'clustering.html', {'cleaned_requests': clusters, 'siluet': siluet})
+    # Применение DBSCAN
+    dbscan = DBSCAN(eps=1, min_samples=4)
+    labels = dbscan.fit_predict(
+        X.toarray())
+    unique_labels = np.unique(labels)
+    tsne = TSNE(n_components=2, random_state=0)
+    X_tsne = tsne.fit_transform(X.toarray())
+
+    # Построение графика кластеров
+    plt.figure(figsize=(10, 6))
+
+    for label in unique_labels:
+        cluster_points = X_tsne[labels == label]
+        if label == -1:
+            plt.scatter(cluster_points[:, 0], cluster_points[:, 1], c='black', label='Выбросы', s=50, alpha=0.5)
+        else:
+            plt.scatter(cluster_points[:, 0], cluster_points[:, 1], label=f'Кластер {label}', s=100, alpha=0.7)
+
+    plt.title('Визуализация кластеров DBSCAN')
+    plt.xlabel('t-SNE 1')
+    plt.ylabel('t-SNE 2')
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+
+    buf = BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    dbscan = base64.b64encode(buf.read()).decode('utf-8')
+    buf.close()
+
+    return render(request, 'clustering.html', {'cleaned_requests': clusters, 'siluet': siluet, 'dbscan': dbscan})
